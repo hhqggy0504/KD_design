@@ -59,7 +59,8 @@ class MyLenet5_stu(nn.Module):
         self.pool2 = nn.AvgPool2d(kernel_size=2, stride=2)
         self.conv3 = nn.Conv2d(8, 60, kernel_size=5)
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(21660, 42)
+        # self.fc1 = nn.Linear(21660, 42)
+        self.fc1 = nn.Linear(893040, 42)
         self.fc2 = nn.Linear(42, 10)
 
     def forward(self, x):
@@ -247,7 +248,7 @@ class Bottleneck(nn.Module):
 
 
 class ResNet50(nn.Module):
-    def __init__(self, num_classes=10):
+    def __init__(self, num_classes=5):
         super(ResNet50, self).__init__()
         # 将初始输入通道数调整为原来的一半
         self.in_channels = 32

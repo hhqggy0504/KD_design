@@ -56,7 +56,7 @@ class MyLenet5(nn.Module):
         self.pool2 = nn.AvgPool2d(kernel_size=2, stride=2)
         self.conv3 = nn.Conv2d(16, 120, kernel_size=5)
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(43320, 84)
+        self.fc1 = nn.Linear(1786080, 84)
         self.fc2 = nn.Linear(84, 10)
 
     def forward(self, x):
@@ -295,6 +295,6 @@ class ResNet50(nn.Module):
 
 model_ResNet50 = ResNet50()
 teacher_params_count = count_parameters(model_ResNet50)
-# print(f"教师网络的参数量为: {teacher_params_count}")
+print(f"教师网络的参数量为: {teacher_params_count}")
 
-optimizer_teacher=torch.optim.Adam(model_ResNet50.parameters(), lr=1e-3)
+# optimizer_teacher=torch.optim.Adam(model_ResNet50.parameters(), lr=1e-3)

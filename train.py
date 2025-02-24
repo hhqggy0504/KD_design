@@ -83,7 +83,7 @@ def train_KD(model, train_loader, optimizer, epochs, train_mode):
 # 普通单个网络训练
 def train_norm(model, train_loader, optimizer, epochs, train_mode):
     logger.info(f"Training {train_mode} work is beginning......")
-    model.cuda()
+    # model.cuda()
     model.train()
 
     best_acc = 0.0
@@ -101,6 +101,10 @@ def train_norm(model, train_loader, optimizer, epochs, train_mode):
 
             # loss = loss_function(outputs,labels)
             loss = Loss_function_set.loss_fn_norm(outputs=outputs, labels=labels)
+            if torch.isnan(loss).any() or torch.isinf(loss).any():
+                print("Loss is NaN or Inf! Skipping this batch.")
+                continue
+            # print(f"Loss: {loss.item()}")  # 观察是否为 NaN 或 Inf
 
             loss.backward()
             optimizer.step()
@@ -156,39 +160,49 @@ def validate(model, val_loader):
 ##主通道入口
 if __name__ == '__main__':
     # 如果GPU可用，就使用GPU，否则C    PU
-    if torch.cuda.is_available():
-        device = torch.device('cuda')
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
     logger.info("Loading the datasets...")
+    models = [ "model_ResNet50"]
+
+    # model_use = "model_ResNet50" #  model_MyLenet5    model_AlexNet   model_VGG16    model_ResNet50
 
     #选择训练模式，是知识蒸馏/教师网络训练/学生网络训练
     # train_mode="knowledge_distillation"
     # train_mode="teachernet_train"
     train_mode="studentnet_train"
 
-    model_use=""
+    for model_use in models:
 
-    #tensorboard监控启动
-    writer = SummaryWriter(f'./tensorboard_runs/{train_mode}_model_ResNet50_logs')
+        logger.info(f"Training {model_use} work is beginning...")
 
-    #设置随机数种子
-    random.seed(230)
+        #tensorboard监控启动
+        writer = SummaryWriter(f'./tensorboard_runs/FUSAR_{train_mode}_{model_use}_logs')
 
-    # 打印模型结构
-    # print("Model structure:")
-    # print(student_net.model)
-    #
-    # print(teacher_net.model)
-    # Create the input data pipeline
+        #设置随机数种子
+        random.seed(230)
 
-    #训练模式动态调整
-    # train(model=teacher_net.model1,train_loader=data_loader.load_data(type="train"),optimizer=teacher_net.optimizer_teacher,epochs=50)
-    if train_mode == "knowledge_distillation":
-        train_KD(model=student_net.model2,train_loader=data_loader.load_data(type="train"),optimizer=student_net.optimizer_stu,epochs=50)
-    elif train_mode == "studentnet_train":
-        train_norm(model=student_net.model_ResNet50,train_loader=data_loader.load_data(type="train"),
-                   optimizer=student_net.optimizer_stu,epochs=50,train_mode=train_mode)
-    elif train_mode == "teachernet_train":
-        train_norm(model=teacher_net.model_ResNet50,train_loader=data_loader.load_data(type="train"),
-                   optimizer=teacher_net.optimizer_teacher,epochs=50,train_mode=train_mode)
-    else:
-        pass
+        # 打印模型结构
+        # print("Model structure:")
+        # print(student_net.model)
+        #
+        # print(teacher_net.model)
+        # Create the input data pipeline
+
+        #训练模式动态调整
+        # train(model=teacher_net.model1,train_loader=data_loader.load_data(type="train"),optimizer=teacher_net.optimizer_teacher,epochs=50)
+        if train_mode == "knowledge_distillation":
+            train_KD(model=student_net.model2,train_loader=data_loader.load_data(type="train"),optimizer=student_net.optimizer_stu,epochs=50)
+        elif train_mode == "studentnet_train":
+            train_norm(model=getattr(student_net,model_use).to(device),train_loader=data_loader.load_data(type="train"),
+                       optimizer=torch.optim.Adam((getattr(student_net,model_use).parameters()), lr=1e-3), epochs=50,train_mode=train_mode)
+        elif train_mode == "teachernet_train":
+            train_norm(model=getattr(teacher_net,model_use).to(device),train_loader=data_loader.load_data(type="train"),
+                       optimizer=torch.optim.Adam((getattr(teacher_net,model_use).parameters()), lr=1e-4), epochs=50,train_mode=train_mode)
+        else:
+            pass
+
+
+# if __name__ == "__main__":
+#     train()

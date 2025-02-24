@@ -6,28 +6,30 @@ import numpy as np
 # def fetch_dataloader(types):
 
 def load_data(type):
-    train_path="./MSTAR/train"
-    test_path="./MSTAR/test"
+    # train_path="./MSTAR/train"
+    # test_path="./MSTAR/test"
+    train_path="./fusar/train"
+    test_path="./fusar/test"
 
     train_transforms = transforms.Compose([
-        transforms.Resize((100, 100)),
+        transforms.Resize((512, 512)),
         transforms.Grayscale(num_output_channels=3), ##灰度图转为RGB三通道
         transforms.ToTensor(),
-        transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
 
     test_transforms = transforms.Compose([
-        transforms.Resize((100, 100)),
+        transforms.Resize((512, 512)),
         transforms.Grayscale(num_output_channels=3), ##灰度图转为RGB三通道
         transforms.ToTensor(),
-        transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
 
     train_dataset = datasets.ImageFolder(root=train_path, transform=train_transforms)
-    train_loader = DataLoader(dataset=train_dataset, batch_size=32, shuffle=True)
+    train_loader = DataLoader(dataset=train_dataset, batch_size=16, shuffle=True,num_workers=0,pin_memory = True)
 
     val_dataset = datasets.ImageFolder(root=test_path, transform=test_transforms)
-    val_loader = DataLoader(dataset=val_dataset, batch_size=32, shuffle=False)
+    val_loader = DataLoader(dataset=val_dataset, batch_size=16, shuffle=False,num_workers=0,pin_memory = True)
 
 
     # print(f"Number of training images: {len(train_dataset)}")
