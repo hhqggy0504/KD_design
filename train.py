@@ -20,12 +20,12 @@ import Loss_function_set
 
 
 # 知识蒸馏KD训练
-def train_KD(model, train_loader, optimizer, epochs, train_mode):
+def train_KD(model, train_loader, optimizer, epochs, train_mode,model_use):
     logger.info(f"Training {train_mode} work is beginning......")
-    model.cuda()
     model.train()
 
-    teacher_model=teacher_net.model1
+    teacher_model=getattr(teacher_net,model_use)
+    teacher_model.load_state_dict(torch.load(f'./model_params/FUSAR_{model_use}_best_teachernet_train_params.pt'))
     teacher_model.cuda()
     teacher_model.eval()
 
@@ -74,7 +74,7 @@ def train_KD(model, train_loader, optimizer, epochs, train_mode):
         if val_acc > best_acc:
             best_acc = val_acc
             # torch.save(model.state_dict(),'./model_params/best_teacher_model_params.pt')
-            torch.save(model.state_dict(), './model_params/best_kd_params.pt')
+            torch.save(model.state_dict(), f'./model_params/FUSAR_{model_use}_{train_mode}_best_kd_params.pt')
             logger.info(f"Best model renewed! Validation accuracy: {val_acc:.4f}")
 
 
@@ -130,7 +130,7 @@ def train_norm(model, train_loader, optimizer, epochs, train_mode):
         if val_acc > best_acc:
             best_acc = val_acc
             # torch.save(model.state_dict(),'./model_params/best_teacher_model_params.pt')
-            torch.save(model.state_dict(), f'./model_params/best_{train_mode}_params.pt')
+            torch.save(model.state_dict(), f'./model_params/FURSAR_best_{model_use}_{train_mode}_params.pt')
             logger.info(f"Best model renewed! Validation accuracy: {val_acc:.4f}")
 
     writer.close()
@@ -164,24 +164,26 @@ if __name__ == '__main__':
     print(f"Using device: {device}")
 
     logger.info("Loading the datasets...")
-    models = [ "model_ResNet50"]
+    models = [ "model_Lenet5", "model_AlexNet", "model_VGG16","model_ResNet50"]# "model_Lenet5", "model_AlexNet", "model_VGG16","model_ResNet50"
 
     # model_use = "model_ResNet50" #  model_MyLenet5    model_AlexNet   model_VGG16    model_ResNet50
 
     #选择训练模式，是知识蒸馏/教师网络训练/学生网络训练
-    # train_mode="knowledge_distillation"
+    train_mode="knowledge_distillation"
     # train_mode="teachernet_train"
-    train_mode="studentnet_train"
+    # train_mode="studentnet_train"
+
+    # 设置随机数种子
+    random.seed(230)
 
     for model_use in models:
 
         logger.info(f"Training {model_use} work is beginning...")
 
         #tensorboard监控启动
-        writer = SummaryWriter(f'./tensorboard_runs/FUSAR_{train_mode}_{model_use}_logs')
+        writer = SummaryWriter(f'./tensorboard_runs/FUSAR_{train_mode}_{model_use}_KD_logs')
 
-        #设置随机数种子
-        random.seed(230)
+
 
         # 打印模型结构
         # print("Model structure:")
@@ -193,10 +195,11 @@ if __name__ == '__main__':
         #训练模式动态调整
         # train(model=teacher_net.model1,train_loader=data_loader.load_data(type="train"),optimizer=teacher_net.optimizer_teacher,epochs=50)
         if train_mode == "knowledge_distillation":
-            train_KD(model=student_net.model2,train_loader=data_loader.load_data(type="train"),optimizer=student_net.optimizer_stu,epochs=50)
+            train_KD(model=getattr(student_net,model_use).to(device),train_loader=data_loader.load_data(type="train"),
+                     optimizer=torch.optim.Adam((getattr(student_net,model_use).parameters()), lr=1e-4),epochs=50,train_mode=train_mode,model_use=model_use)
         elif train_mode == "studentnet_train":
             train_norm(model=getattr(student_net,model_use).to(device),train_loader=data_loader.load_data(type="train"),
-                       optimizer=torch.optim.Adam((getattr(student_net,model_use).parameters()), lr=1e-3), epochs=50,train_mode=train_mode)
+                       optimizer=torch.optim.Adam((getattr(student_net,model_use).parameters()), lr=1e-4), epochs=50,train_mode=train_mode)
         elif train_mode == "teachernet_train":
             train_norm(model=getattr(teacher_net,model_use).to(device),train_loader=data_loader.load_data(type="train"),
                        optimizer=torch.optim.Adam((getattr(teacher_net,model_use).parameters()), lr=1e-4), epochs=50,train_mode=train_mode)

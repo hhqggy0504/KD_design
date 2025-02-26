@@ -28,7 +28,7 @@ class ConvNet2(nn.Module):
         self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(512, 512)  # 输入维度需要根据前面的层计算
         self.fc2 = nn.Linear(512, 512)
-        self.fc3 = nn.Linear(512, 10)
+        self.fc3 = nn.Linear(512, 5)
 
     def forward(self, x):
         x = nn.ReLU()(self.conv1(x))
@@ -60,8 +60,8 @@ class MyLenet5_stu(nn.Module):
         self.conv3 = nn.Conv2d(8, 60, kernel_size=5)
         self.flatten = nn.Flatten()
         # self.fc1 = nn.Linear(21660, 42)
-        self.fc1 = nn.Linear(893040, 42)
-        self.fc2 = nn.Linear(42, 10)
+        self.fc1 = nn.Linear(150000, 42)
+        self.fc2 = nn.Linear(42, 5)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -106,7 +106,7 @@ class AlexNet_stu(nn.Module):
             nn.ReLU(inplace=True),
             nn.Linear(2048, 512),
             nn.ReLU(inplace=True),
-            nn.Linear(512, 10),
+            nn.Linear(512, 5),
         )
 
     def forward(self, x):
@@ -192,7 +192,7 @@ class Vgg16_net_stu(nn.Module):
             nn.Linear(2048, 2048),
             nn.ReLU(inplace=True),
             nn.Dropout(),
-            nn.Linear(2048, 10)
+            nn.Linear(2048, 5)
         )
 
 

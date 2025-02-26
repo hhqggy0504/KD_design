@@ -26,7 +26,7 @@ class ConvNet1(nn.Module):
         self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(1024, 1024)  # 输入维度需要根据前面的层计算
         self.fc2 = nn.Linear(1024, 1024)
-        self.fc3 = nn.Linear(1024, 10)
+        self.fc3 = nn.Linear(1024, 5)
 
     def forward(self, x):
         x = nn.ReLU()(self.conv1(x))
@@ -56,8 +56,8 @@ class MyLenet5(nn.Module):
         self.pool2 = nn.AvgPool2d(kernel_size=2, stride=2)
         self.conv3 = nn.Conv2d(16, 120, kernel_size=5)
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(1786080, 84)
-        self.fc2 = nn.Linear(84, 10)
+        self.fc1 = nn.Linear(300000, 84)
+        self.fc2 = nn.Linear(84, 5)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -102,7 +102,7 @@ class AlexNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.Linear(4096, 1024),
             nn.ReLU(inplace=True),
-            nn.Linear(1024, 10),
+            nn.Linear(1024, 5),
         )
 
     def forward(self, x):
@@ -188,7 +188,7 @@ class Vgg16_net(nn.Module):
             nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
             nn.Dropout(),
-            nn.Linear(4096, 10)
+            nn.Linear(4096, 5)
         )
 
 
@@ -243,7 +243,7 @@ class Bottleneck(nn.Module):
 
 
 class ResNet50(nn.Module):
-    def __init__(self, num_classes=10):
+    def __init__(self, num_classes=5):
         super(ResNet50, self).__init__()
         self.in_channels = 64
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
