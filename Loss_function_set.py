@@ -7,9 +7,9 @@ def loss_fn_norm(outputs, labels):
     # print(f"Labels shape: {labels.shape}")
     return nn.CrossEntropyLoss()(outputs, labels)
 
-def loss_fn_kd(outputs, labels, teacher_outputs):
+def loss_fn_kd(outputs, labels, teacher_outputs,alphas):
     # hyperparameters for KD
-    alphas = 0.5
+ ###0.5best now
     temperatures =  4.5
 
     logging.info("Searching hyperparameters...")
@@ -33,3 +33,20 @@ def loss_fn_kd(outputs, labels, teacher_outputs):
               F.cross_entropy(outputs, labels) * (1. - alpha)
 
     return KD_loss
+
+
+def feature_distillation_loss(teacher_feats, student_feats):
+    """
+    计算多层特征对齐损失
+    Args:
+        teacher_feats: List[Tensor] 教师模型特征列表
+        student_feats: List[Tensor] 学生模型特征列表
+    Returns:
+        loss: Tensor 特征蒸馏总损失
+    """
+    total_loss = 0.0
+    for t_feat, s_feat in zip(teacher_feats, student_feats):
+        # 方法1：MSE损失
+        total_loss += F.l1_loss(s_feat, t_feat)
+
+    return total_loss / len(teacher_feats)  # 平均各层损失
